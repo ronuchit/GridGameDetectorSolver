@@ -33,6 +33,8 @@ class ChessSolver(Solver):
         list ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
         or None if no piece.
         """
+        remap_dict = {'bb': 'b', 'bk': 'k', 'bn': 'n', 'bp': 'p', 'br': 'r', 'wb': 'B', 'wk': 'K', 'wn': 'N', 'wp': 'P', 'wr': 'R', None: None}
+        pieces = [remap_dict[piece] for piece in pieces]
         board = pychess.Board()
         board.set_fen(self._get_board_string(pieces))
         engine = pychess_uci.popen_engine(STOCKFISH_PATH)
