@@ -1,17 +1,13 @@
 import cv2
-import os
 from threading import Thread
 import subprocess
 
-# if True, pull from webcam; if False, run OpenNI with ROS (used for PrimeSense)
-WEBCAM = True
-DISP_SCALE = 0.7
-
 class WebcamImageGetter:
-    def __init__(self):
+    def __init__(self, disp_scale):
         self.currentFrame = None
         self.capture = cv2.VideoCapture(0)
         self.keep_going = True
+        self.disp_scale = disp_scale
 
     def start(self):
         Thread(target=self.updateFrame).start()
@@ -20,7 +16,7 @@ class WebcamImageGetter:
         while self.keep_going:
             ret, frame = self.capture.read()
             if ret:
-                self.currentFrame = cv2.resize(frame, dsize=(0, 0), fx=DISP_SCALE, fy=DISP_SCALE)
+                self.currentFrame = cv2.resize(frame, dsize=(0, 0), fx=self.disp_scale, fy=self.disp_scale)
 
     def getFrame(self):
         return self.currentFrame
@@ -29,9 +25,10 @@ class WebcamImageGetter:
         pass
 
 class OpenNIImageGetter:
-    def __init__(self):
+    def __init__(self, disp_scale):
         self.currentFrame = None
         self.keep_going = True
+        self.disp_scale = disp_scale
 
     def start(self):
         Thread(target=self.listener).start()
@@ -39,7 +36,7 @@ class OpenNIImageGetter:
 
     def callback(self, data, bridge):
         frame = bridge.imgmsg_to_cv2(data, "bgr8")
-        self.currentFrame = cv2.resize(frame, dsize=(0, 0), fx=DISP_SCALE, fy=DISP_SCALE)
+        self.currentFrame = cv2.resize(frame, dsize=(0, 0), fx=self.disp_scale, fy=self.disp_scale)
 
     def listener(self):
         bridge = CvBridge()
@@ -53,25 +50,3 @@ class OpenNIImageGetter:
 
     def end(self):
         self.p.terminate()
-
-if __name__ == "__main__":
-    print "Press enter to quit."
-    if WEBCAM:
-        w = WebcamImageGetter()
-    else:
-        import rospy
-        from sensor_msgs.msg import Image
-        from cv_bridge import CvBridge
-        w = OpenNIImageGetter()
-    w.start()
-    while True:
-        frame = w.getFrame()
-        if frame is None:
-            continue
-        cv2.imshow("frame", frame)
-        if cv2.waitKey(1) & 0xFF == 10:
-            cv2.destroyAllWindows()
-            cv2.waitKey(1)
-            w.keep_going = False
-            w.end()
-            break
