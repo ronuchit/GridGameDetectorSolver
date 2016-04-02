@@ -106,8 +106,6 @@ class Runner(object):
             width = coord_range[3] - coord_range[2]
             ans_img = misc.imresize(ans_img, (height, width, 3))
             src_img = misc.imresize(src_img, (height, width, 3))
-            import IPython
-            IPython.embed()
             dst_img = np.where(ans_img < 20, ans_img, src_img)
             frame[coord_range[0]:coord_range[1], coord_range[2]: coord_range[3]] = dst_img
         return frame
