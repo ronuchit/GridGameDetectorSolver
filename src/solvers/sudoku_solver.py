@@ -7,8 +7,13 @@ import time
 from sklearn import datasets, svm, metrics
 from sklearn.externals import joblib
 import re
+import skimage
+import numpy as np
 import cv2
 import IPython
+import caffe
+import matplotlib.pyplot as plt
+from scipy import signal
 
 class SudokuSolver(Solver):
     WIDTH = 9
@@ -22,13 +27,11 @@ class SudokuSolver(Solver):
         board_repr = self._detect(board)
         board_repr = "000000208920004000000208071036000000000709000000000640860401000000900027209000000"
         solution = self._get_solution(board_repr)
-        # TODO: set up return value correctly as specified in solver.py
         ret = []
         for idx, c in enumerate(board_repr):
             if c != solution[idx]: # solution differs
                 im = self._getTemplate(solution[idx])
                 ret.append((self._idx2ij(idx), im))
-                IPython.embed()
         return (ret, 0.5, 0.99)
 
     def _getTemplate(self, num):
@@ -41,7 +44,29 @@ class SudokuSolver(Solver):
         return idx / 9, idx % 9
 
     def _detect(self, board):
-        pass
+        board_repr = ""
+        for row in board:
+            for sq in row:
+                sq = sq[5:-5, 5:-5]
+                if sq.min() > 30:
+                    # no number here
+                    board_repr += "0"
+                else:
+                    binary_thresh = 50
+                    sq[sq <= binary_thresh] = 0
+                    sq[sq > binary_thresh] = 255
+                    sq = cv2.cvtColor(sq, cv2.COLOR_BGR2GRAY)
+                    correls = []
+                    for i in range(1, 10):
+                        pic = cv2.imread("../images/%d_sq.png"%i)
+                        pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
+                        correl = signal.correlate(pic, sq).sum()
+                        correls.append(correl)
+                    print correls
+                    pred = np.argmax(correls) + 1
+                    print pred
+                    cv2.imshow("sq", sq)
+                    cv2.waitKey(0)
 
     def _get_solution(self, board_repr):
         """
