@@ -75,7 +75,6 @@ class ChessSolver(Solver):
         prob = np.sum(np.max(out, axis=1))
         return np.reshape(predictions, (8, 8)), prob
 
-
     def _get_next_move(self, pieces):
         """
         Pieces is a 8x8 numpy array of pieces from the
