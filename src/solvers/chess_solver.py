@@ -20,8 +20,8 @@ import pickle
 
 STOCKFISH_PATH = "../lib/stockfish-6-linux/src/stockfish"
 TIMEOUT_MS = 2000
-CAFFENET_DEPLOY_TXT = '../../caffemodels/deploy.prototxt'
-CAFFENET_MODEL_FILE = '../../caffemodels/finetune_chess_iter_5554.caffemodel'
+CAFFENET_DEPLOY_TXT = '../caffemodels/deploy.prototxt'
+CAFFENET_MODEL_FILE = '../caffemodels/finetune_chess_iter_5554.caffemodel'
 
 categories = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 BATCH_SIZE = 64
