@@ -58,6 +58,7 @@ class ChessSolver(Solver):
     def detect_and_play(self, board):
         if not self.started:
             self.initialize()
+            self.started = True
 
         pieces, prob = self._detect(board)
         print "Pieces, prob: ", pieces, prob
