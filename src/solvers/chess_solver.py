@@ -33,6 +33,9 @@ class ChessSolver(Solver):
     GAME_NAME = "chess"
 
     def __init__(self):
+        self.started = False
+
+    def initialize(self):
         # Caffe net setup
         net = caffe.Net(CAFFENET_DEPLOY_TXT, CAFFENET_MODEL_FILE, caffe.TEST)
         # Set up transformer for input data
@@ -42,7 +45,6 @@ class ChessSolver(Solver):
         transformer.set_raw_scale('data', 255)  # the reference model operates on images in [0,255] range instead of [0,1]
         transformer.set_channel_swap('data', (2,1,0))  # the reference model has channels in BGR order instead of RGB
         net.blobs['data'].reshape(BATCH_SIZE, 3, 227, 227)
-
         self.board = pychess.Board()
         self.engine = pychess_uci.popen_engine(STOCKFISH_PATH)
         self.engine.uci()
@@ -50,11 +52,13 @@ class ChessSolver(Solver):
         self.engine.info_handlers.append(pychess_uci.InfoHandler())
         self.remap = {'bb': 'b', 'bk': 'k', 'bn': 'n', 'bp': 'p', 'bq': 'q', 'br': 'r', 'wb': 'B', 'wk': 'K', 'wn': 'N', 'wp': 'P', 'wq': 'Q', 'wr': 'R', None: None}
 
-
     """
     `board` is an 8x8 list of images
     """
     def detect_and_play(self, board):
+        if not self.started:
+            self.initialize()
+
         pieces, prob = self._detect(board)
         print "Pieces, prob: ", pieces, prob
         move = self._get_next_move(pieces)
