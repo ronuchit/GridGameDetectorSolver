@@ -2,7 +2,13 @@
 This file defines the solver for chess.
 """
 
-class ChessSolver(object):
+from solver import Solver
+
+class ChessSolver(Solver):
+    WIDTH = 8
+    HEIGHT = 8
+    GAME_NAME = "chess"
+
     def detect_and_play(self, board):
         pieces = self._detect(board)
         move = self._get_next_move(pieces)

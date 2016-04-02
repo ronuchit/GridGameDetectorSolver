@@ -4,6 +4,10 @@ and 2) what it means to "solve" your game. Solving could just mean finding the n
 """
 
 class Solver(object):
+    WIDTH = None
+    HEIGHT = None
+    GAME_NAME = ""
+
     def detect_and_play(self, board):
         """
         Board is a height-by-width numpy array of RGB images of each square in the grid.

@@ -2,7 +2,13 @@
 This file defines the solver for Sudoku.
 """
 
-class SudokuSolver(object):
+from solver import Solver
+
+class SudokuSolver(Solver):
+    WIDTH = 9
+    HEIGHT = 9
+    GAME_NAME = "sudoku"
+
     def detect_and_play(self, board):
         board_repr = self._detect(board)
         solution = self._get_solution(board_repr)
