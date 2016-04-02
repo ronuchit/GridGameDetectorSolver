@@ -79,7 +79,7 @@ class Runner(object):
         Returns a numpy array of the board squares, to be passed into Solver.detect_and_play,
         along with its height and width.
         """
-        col_inds, row_inds = self.gd.detect(frame)
+        col_inds, row_inds, frame = self.gd.detect(frame)
         col_inds = sorted(col_inds)
         row_inds = sorted(row_inds)
         width = len(col_inds) - 1
