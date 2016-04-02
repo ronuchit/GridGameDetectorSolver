@@ -18,7 +18,7 @@ import caffe
 import skimage
 import pickle
 
-STOCKFISH_PATH = "../../lib/stockfish-6-mac/src/stockfish"
+STOCKFISH_PATH = "../lib/stockfish-6-linux/src/stockfish"
 TIMEOUT_MS = 2000
 CAFFENET_DEPLOY_TXT = '../../caffemodels/deploy.prototxt'
 CAFFENET_MODEL_FILE = '../../caffemodels/finetune_chess_iter_5554.caffemodel'
