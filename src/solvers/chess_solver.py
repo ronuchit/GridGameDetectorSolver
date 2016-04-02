@@ -16,6 +16,15 @@ class ChessSolver(Solver):
     HEIGHT = 8
     GAME_NAME = "chess"
 
+    def __init__(self):
+        self.board = pychess.Board()
+        self.engine = pychess_uci.popen_engine(STOCKFISH_PATH)
+        self.engine.uci()
+        self.engine.setoption({"UCI_Chess960": True})
+        self.engine.info_handlers.append(pychess_uci.InfoHandler())
+        self.remap = {'bb': 'b', 'bk': 'k', 'bn': 'n', 'bp': 'p', 'bq': 'q', 'br': 'r', 'wb': 'B', 'wk': 'K', 'wn': 'N', 'wp': 'P', 'wq': 'Q', 'wr': 'R', None: None}
+
+
     def detect_and_play(self, board):
         pieces = self._detect(board)
         move = self._get_next_move(pieces)
@@ -33,18 +42,12 @@ class ChessSolver(Solver):
         list ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
         or None if no piece.
         """
-        remap_dict = {'bb': 'b', 'bk': 'k', 'bn': 'n', 'bp': 'p', 'br': 'r', 'wb': 'B', 'wk': 'K', 'wn': 'N', 'wp': 'P', 'wr': 'R', None: None}
-        pieces = [remap_dict[piece] for piece in pieces]
-        board = pychess.Board()
-        board.set_fen(self._get_board_string(pieces))
-        engine = pychess_uci.popen_engine(STOCKFISH_PATH)
-        engine.uci()
-        engine.setoption({"UCI_Chess960": True})
-        engine.info_handlers.append(pychess_uci.InfoHandler())
-        engine.position(board)
-        engine.go(movetime=TIMEOUT_MS, async_callback=True)
+        pieces = np.reshape(np.array([self.remap[piece] for piece in pieces.flatten()]), [8, 8])
+        self.board.set_fen(pieces)
+        self.engine.position(self.board)
+        self.engine.go(movetime=TIMEOUT_MS, async_callback=True)
         time.sleep(TIMEOUT_MS / 1000)
-        ih = engine.info_handlers[0]
+        ih = self.engine.info_handlers[0]
         best_move = ih.info["pv"][1][0]
         score = ih.info["score"][1].cp
         mate = ih.info["score"][1].mate
@@ -72,7 +75,7 @@ class ChessSolver(Solver):
         return s
 
 # def random_board_generator():
-#     pieces = ['b', 'n', 'r'] * 2 + ['k', 'q'] + ['p'] * 8 + ['B', 'N', 'R'] * 2 + ['K', 'Q'] + ['P'] * 8 + [None] * 32
-#     random_pieces = np.reshape(np.random.choice(pieces, 64), [8,8])
+#     pieces = ['bb', 'bn', 'br'] * 2 + ['bk', 'bq'] + ['bp'] * 8 + ['wb', 'wb', 'wr'] * 2 + ['wk', 'wq'] + ['wp'] * 8 + [None] * 32
+#     random_pieces = np.reshape(np.random.choice(pieces, 64, replace=False), [8, 8])
 #     return random_pieces
-#     print random_pieces
+
