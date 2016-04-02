@@ -35,7 +35,7 @@ class SudokuSolver(Solver):
 
     def _getTemplate(self, num):
         if num not in self.templates:
-            self.templates[num] = cv2.imread('../images/' + num + '.png', -1)[:,:,:4]
+            self.templates[num] = cv2.imread('../images/' + num + '.jpg', -1)[:,:,:3]
         return self.templates[num]
 
     def _idx2ij(self, idx):
