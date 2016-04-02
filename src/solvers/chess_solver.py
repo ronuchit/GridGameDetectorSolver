@@ -2,19 +2,26 @@
 This file defines the solver for chess.
 """
 
+from solver import Solver
+import time
 import chess as pychess
 import chess.uci as pychess_uci
-import time
 import numpy as np
 
-STOCKFISH_PATH = "../lib/stockfish-6-mac/src/stockfish"
+STOCKFISH_PATH = "../../lib/stockfish-6-mac/src/stockfish"
 TIMEOUT_MS = 2000
 
-class ChessSolver(object):
+class ChessSolver(Solver):
+    WIDTH = 8
+    HEIGHT = 8
+    GAME_NAME = "chess"
+
     def detect_and_play(self, board):
         pieces = self._detect(board)
         move = self._get_next_move(pieces)
         # TODO: set up return value correctly as specified in solver.py
+        time.sleep(2)
+        return ("chess_solution_%s"%board, 0.5, 0.99)
 
     def _detect(self, board):
         # TODO
@@ -26,7 +33,6 @@ class ChessSolver(object):
         list ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
         or None if no piece.
         """
-        # TODO
         board = pychess.Board()
         board.set_fen(self._get_board_string(pieces))
         engine = pychess_uci.popen_engine(STOCKFISH_PATH)
