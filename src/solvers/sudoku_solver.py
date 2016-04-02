@@ -43,29 +43,30 @@ class SudokuSolver(Solver):
         return idx / 9, idx % 9
 
     def _detect(self, board):
-        board_repr = ""
-        for row in board:
-            for sq in row:
-                sq = sq[5:-5, 5:-5]
-                if sq.min() > 30:
-                    # no number here
-                    board_repr += "0"
-                else:
-                    binary_thresh = 50
-                    sq[sq <= binary_thresh] = 0
-                    sq[sq > binary_thresh] = 255
-                    sq = cv2.cvtColor(sq, cv2.COLOR_BGR2GRAY)
-                    correls = []
-                    for i in range(1, 10):
-                        pic = cv2.imread("../images/%d_sq.png"%i)
-                        pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
-                        correl = signal.correlate(pic, sq).sum()
-                        correls.append(correl)
-                    print correls
-                    pred = np.argmax(correls) + 1
-                    print pred
-                    cv2.imshow("sq", sq)
-                    cv2.waitKey(0)
+        # board_repr = ""
+        # for row in board:
+        #     for sq in row:
+        #         sq = sq[5:-5, 5:-5]
+        #         if sq.min() > 30:
+        #             # no number here
+        #             board_repr += "0"
+        #         else:
+        #             binary_thresh = 50
+        #             sq[sq <= binary_thresh] = 0
+        #             sq[sq > binary_thresh] = 255
+        #             sq = cv2.cvtColor(sq, cv2.COLOR_BGR2GRAY)
+        #             correls = []
+        #             for i in range(1, 10):
+        #                 pic = cv2.imread("../images/%d_sq.png"%i)
+        #                 pic = cv2.cvtColor(pic, cv2.COLOR_BGR2GRAY)
+        #                 correl = signal.correlate(pic, sq).sum()
+        #                 correls.append(correl)
+        #             print correls
+        #             pred = np.argmax(correls) + 1
+        #             print pred
+        #             cv2.imshow("sq", sq)
+        #             cv2.waitKey(0)
+        pass
 
     def _get_solution(self, board_repr):
         """

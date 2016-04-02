@@ -73,8 +73,6 @@ class GridDetector(object):
         row_spaced = row_spaced[:10]
         return col_spaced, row_spaced
 
-
-
     def four_point_transform(self, img, source, square_length=504):
         destination = np.array([[0, 0], [0, square_length], [square_length, square_length], [square_length, 0]])
         gx, gy = np.mgrid[0:503:504j, 0:503:504j]
