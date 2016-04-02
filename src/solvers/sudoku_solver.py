@@ -13,9 +13,6 @@ class SudokuSolver(Solver):
     HEIGHT = 9
     GAME_NAME = "sudoku"
 
-    def __init__(self):
-        self.classifier = joblib.load('../../lib/mnist_svm/svm.pkl')
-
     def detect_and_play(self, board):
         board_repr = self._detect(board)
         board_repr = "000000208920004000000208071036000000000709000000000640860401000000900027209000000"
@@ -24,8 +21,6 @@ class SudokuSolver(Solver):
         return ("sudoku_solution", 0.5, 0.99)
 
     def _detect(self, board):
-        flat = np.asarray([x for x in row for row in board])
-        data = digits.images.reshape((n_samples, -1))
         pass
 
     def _get_solution(self, board_repr):
