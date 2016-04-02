@@ -8,7 +8,7 @@ import chess as pychess
 import chess.uci as pychess_uci
 import numpy as np
 
-STOCKFISH_PATH = "../../lib/stockfish-6-mac/src/stockfish"
+STOCKFISH_PATH = "../lib/stockfish-6-linux/src/stockfish"
 TIMEOUT_MS = 2000
 
 class ChessSolver(Solver):

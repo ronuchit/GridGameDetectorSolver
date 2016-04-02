@@ -4,7 +4,9 @@ import cv2
 from image_grabber import WebcamImageGetter, OpenNIImageGetter
 from solvers.chess_solver import ChessSolver
 from solvers.sudoku_solver import SudokuSolver
+from grid_detector import GridDetector
 import os
+import itertools
 
 # if True, pull from webcam; if False, run OpenNI with ROS (used for PrimeSense)
 WEBCAM = True
@@ -24,11 +26,9 @@ class Runner(object):
         if WEBCAM:
             w = WebcamImageGetter(disp_scale=DISP_SCALE)
         else:
-            import rospy
-            from sensor_msgs.msg import Image
-            from cv_bridge import CvBridge
             w = OpenNIImageGetter(disp_scale=DISP_SCALE)
         w.start()
+        self.gd = GridDetector()
 
         solvers = {}
         for s_c in SOLVERS:
@@ -42,10 +42,11 @@ class Runner(object):
             self.iteration += 1
             # poll image thread at FPS rate
             time.sleep(1.0 / FPS)
-            frame = w.getFrame()
+            # frame = w.getFrame()
+            frame = cv2.resize(cv2.imread("../images/sample_sudoku.jpg"), dsize=(0, 0), fx=DISP_SCALE, fy=DISP_SCALE)
             if frame is None:
                 continue
-            height, width, board = self._process_frame()
+            board, height, width = self._process_frame(frame)
             for s_name, s in solvers.items():
                 if height == s.HEIGHT and width == s.WIDTH:
                     if s.board_to_use is None:
@@ -57,7 +58,7 @@ class Runner(object):
                         solution, alpha, prob = s.result
                         if prob > ACCEPT_PROB_THRESH:
                             # accept the solution
-                            print "Accepted solution: %s, with alpha = %s"%(solution, alpha)
+                            print "Accepted solution for game %s: %s, with alpha = %s and prob = %s."%(s.GAME_NAME, solution, alpha, prob)
                             frame = self._do_overlay(frame, solution, alpha)
                             break
 
@@ -73,9 +74,23 @@ class Runner(object):
                     s.keep_going = False
                 break
 
-    def _process_frame(self):
-        # TODO
-        return 9, 9, self.iteration
+    def _process_frame(self, frame):
+        """
+        Returns a numpy array of the board squares, to be passed into Solver.detect_and_play,
+        along with its height and width.
+        """
+        col_inds, row_inds = self.gd.detect(frame)
+        col_inds = sorted(col_inds)
+        row_inds = sorted(row_inds)
+        width = len(col_inds) - 1
+        height = len(row_inds) - 1
+        squares = []
+        for i in range(len(col_inds) - 1):
+            sq = []
+            for j in range(len(row_inds) - 1):
+                sq.append(frame[row_inds[j]:row_inds[j+1], col_inds[i]:col_inds[i+1]])
+            squares.append(sq)
+        return np.array(squares), height, width
 
     def _do_overlay(self, frame, solution, alpha):
         # TODO

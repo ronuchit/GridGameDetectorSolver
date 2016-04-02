@@ -39,6 +39,9 @@ class OpenNIImageGetter:
         self.currentFrame = cv2.resize(frame, dsize=(0, 0), fx=self.disp_scale, fy=self.disp_scale)
 
     def listener(self):
+        import rospy
+        from sensor_msgs.msg import Image
+        from cv_bridge import CvBridge
         bridge = CvBridge()
         rospy.init_node("listener", anonymous=True, disable_signals=True)
         rospy.Subscriber("/camera/rgb/image", Image, self.callback, bridge)

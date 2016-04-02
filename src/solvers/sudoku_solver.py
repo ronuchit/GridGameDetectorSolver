@@ -15,7 +15,7 @@ class SudokuSolver(Solver):
         solution = self._get_solution(board_repr)
         # TODO: set up return value correctly as specified in solver.py
         time.sleep(2)
-        return ("sudoku_solution_%s"%board, 0.5, 0.99)
+        return ("sudoku_solution", 0.5, 0.99)
 
     def _detect(self, board):
         # TODO
