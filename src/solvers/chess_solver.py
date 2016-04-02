@@ -7,9 +7,25 @@ import time
 import chess as pychess
 import chess.uci as pychess_uci
 import numpy as np
+import cv2
+import scipy.spatial as spatial
+import scipy.cluster as clstr
+from time import time
+from collections import defaultdict
+from functools import partial
+import glob
+import caffe
+import skimage
+import pickle
 
 STOCKFISH_PATH = "../lib/stockfish-6-linux/src/stockfish"
 TIMEOUT_MS = 2000
+CAFFENET_DEPLOY_TXT = '../../caffemodels/deploy.prototxt'
+CAFFENET_MODEL_FILE = '../../caffemodels/finetune_chess_iter_5554.caffemodel'
+
+categories = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
+BATCH_SIZE = 64
+
 
 class ChessSolver(Solver):
     WIDTH = 8
@@ -17,6 +33,16 @@ class ChessSolver(Solver):
     GAME_NAME = "chess"
 
     def __init__(self):
+        # Caffe net setup
+        net = caffe.Net(CAFFENET_DEPLOY_TXT, CAFFENET_MODEL_FILE, caffe.TEST)
+        # Set up transformer for input data
+        transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+        transformer.set_transpose('data', (2,0,1))
+        transformer.set_mean('data', np.array([104.00698793, 116.66876762, 122.67891434]));
+        transformer.set_raw_scale('data', 255)  # the reference model operates on images in [0,255] range instead of [0,1]
+        transformer.set_channel_swap('data', (2,1,0))  # the reference model has channels in BGR order instead of RGB
+        net.blobs['data'].reshape(BATCH_SIZE, 3, 227, 227)
+
         self.board = pychess.Board()
         self.engine = pychess_uci.popen_engine(STOCKFISH_PATH)
         self.engine.uci()
@@ -25,16 +51,25 @@ class ChessSolver(Solver):
         self.remap = {'bb': 'b', 'bk': 'k', 'bn': 'n', 'bp': 'p', 'bq': 'q', 'br': 'r', 'wb': 'B', 'wk': 'K', 'wn': 'N', 'wp': 'P', 'wq': 'Q', 'wr': 'R', None: None}
 
 
+    """
+    `board` is an 8x8 list of images
+    """
     def detect_and_play(self, board):
-        pieces = self._detect(board)
+        pieces, prob = self._detect(board)
+        print "Pieces, prob: ", pieces, prob
         move = self._get_next_move(pieces)
-        # TODO: set up return value correctly as specified in solver.py
-        time.sleep(2)
-        return ("chess_solution_%s"%board, 0.5, 0.99)
+        print "Move: ", move
+        # solution, alpha = 0.5, prob
+        return ("chess_solution_%s"%board, 0.5, prob)
 
     def _detect(self, board):
-        # TODO
-        pass
+        input_images = [transformer.preprocess('data', skimage.img_as_float(square).astype(np.float32)) for square in row for row in board]
+        net.blobs['data'].data[...] = np.array(input_images)
+        out = net.forward()['prob']
+        predictions = np.asarray(map(lambda x: categories[x], np.argmax(out, axis=1)))
+        prob = np.sum(np.max(out, axis=1))
+        return np.reshape(predictions, (8, 8)), prob
+
 
     def _get_next_move(self, pieces):
         """
