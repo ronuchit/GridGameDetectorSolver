@@ -3,6 +3,7 @@ This file defines the solver for Sudoku.
 """
 
 from solver import Solver
+import time
 
 class SudokuSolver(Solver):
     WIDTH = 9
@@ -13,6 +14,8 @@ class SudokuSolver(Solver):
         board_repr = self._detect(board)
         solution = self._get_solution(board_repr)
         # TODO: set up return value correctly as specified in solver.py
+        time.sleep(2)
+        return ("sudoku_solution_%s"%board, 0.5, 0.99)
 
     def _detect(self, board):
         # TODO
