@@ -2,9 +2,9 @@ import numpy as np
 import time
 import cv2
 from image_grabber import WebcamImageGetter, OpenNIImageGetter
-from solvers.chess_solver import ChessSolver
 from solvers.sudoku_solver import SudokuSolver
 from grid_detector import GridDetector
+from scipy import misc
 import os
 import itertools
 
@@ -15,7 +15,7 @@ DISP_SCALE = 0.7
 # FPS of video
 FPS = 15
 # to add new game solvers, import them above and add them to this list
-SOLVERS = [ChessSolver, SudokuSolver]
+SOLVERS = [SudokuSolver]
 # acceptance probability threshold
 ACCEPT_PROB_THRESH = 0.9
 
@@ -46,7 +46,7 @@ class Runner(object):
             frame = cv2.resize(cv2.imread("../images/sample_sudoku.jpg"), dsize=(0, 0), fx=DISP_SCALE, fy=DISP_SCALE)
             if frame is None:
                 continue
-            board, height, width = self._process_frame(frame)
+            board, square_coordinates, height, width = self._process_frame(frame)
             for s_name, s in solvers.items():
                 if height == s.HEIGHT and width == s.WIDTH:
                     if s.board_to_use is None:
@@ -55,13 +55,13 @@ class Runner(object):
                         s.board_to_use = board
                     # check if there's a solution saved for this game, from a previous solve
                     if s.result is not None:
+                        print s_name
                         solution, alpha, prob = s.result
                         if prob > ACCEPT_PROB_THRESH:
                             # accept the solution
-                            print "Accepted solution for game %s: %s, with alpha = %s and prob = %s."%(s.GAME_NAME, solution, alpha, prob)
-                            frame = self._do_overlay(frame, solution, alpha)
+                            # print "Accepted solution for game %s: %s, with alpha = %s and prob = %s."%(s.GAME_NAME, solution, alpha, prob)
+                            frame = self._do_overlay(frame, solution, alpha, board, square_coordinates)
                             break
-
             # display frame
             cv2.imshow("frame", frame)
             # handle quitting: stop threads and close imshow windows
@@ -85,15 +85,31 @@ class Runner(object):
         width = len(col_inds) - 1
         height = len(row_inds) - 1
         squares = []
+        square_coordinates = []
         for i in range(len(col_inds) - 1):
             sq = []
+            coordinates = []
             for j in range(len(row_inds) - 1):
                 sq.append(frame[row_inds[j]:row_inds[j+1], col_inds[i]:col_inds[i+1]])
+                coordinates.append([row_inds[j], row_inds[j+1], col_inds[i], col_inds[i+1]])
             squares.append(sq)
-        return np.array(squares), height, width
+            square_coordinates.append(coordinates)
+        return np.array(squares), np.array(square_coordinates), height, width
 
-    def _do_overlay(self, frame, solution, alpha):
-        # TODO
+    def _do_overlay(self, frame, solution, alpha, board, square_coordinates):
+        for answer in solution:
+            index = answer[0]
+            ans_img = answer[1]
+            coord_range = square_coordinates[index[1], index[0]]
+            src_img = board[index[1], index[0]]
+            height = coord_range[1] - coord_range[0]
+            width = coord_range[3] - coord_range[2]
+            ans_img = misc.imresize(ans_img, (height, width, 3))
+            src_img = misc.imresize(src_img, (height, width, 3))
+            import IPython
+            IPython.embed()
+            dst_img = np.where(ans_img < 20, ans_img, src_img)
+            frame[coord_range[0]:coord_range[1], coord_range[2]: coord_range[3]] = dst_img
         return frame
 
 if __name__ == "__main__":
