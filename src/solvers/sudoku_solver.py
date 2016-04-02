@@ -36,7 +36,6 @@ class SudokuSolver(Solver):
             self.templates[num] = cv2.imread('../images/' + num + '.png', -1)[:,:,:4]
         return self.templates[num]
 
-
     def _idx2ij(self, idx):
         idx = int(idx)
         return idx / 9, idx % 9
