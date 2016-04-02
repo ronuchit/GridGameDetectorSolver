@@ -18,7 +18,7 @@ class SudokuSolver(Solver):
         board_repr = "000000208920004000000208071036000000000709000000000640860401000000900027209000000"
         solution = self._get_solution(board_repr)
         # TODO: set up return value correctly as specified in solver.py
-        return ("sudoku_solution", 0.5, 0.99)
+        return (solution, 0.5, 0.99)
 
     def _detect(self, board):
         pass
