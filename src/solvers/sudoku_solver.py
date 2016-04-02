@@ -11,7 +11,6 @@ import skimage
 import numpy as np
 import cv2
 import IPython
-import caffe
 import matplotlib.pyplot as plt
 from scipy import signal
 
